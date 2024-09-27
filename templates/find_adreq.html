@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Find Campaign</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Find Ads to work on</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('influencer', user_id=user_id) }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Stats</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+<br>
+<br>
+    <div class="container">
+        <h1>Find Ads to Work on</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Advert ID</th>
+                    <th>Advert Title</th>
+                    <th>Description</th>
+                    <th>Niche</th>
+                    <th>Budget</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campaign in campaigns %}
+                <tr>
+                    <td>{{ campaign.publ_id }}</td>
+                    <td>{{ campaign.ad_title }}</td>
+                    <td>{{ campaign.requirements }}</td>
+                    <td>{{ campaign.niche }}</td>
+                    <td>{{ campaign.budget }}</td>
+                    <td>
+                        <form action="{{ url_for('Request_ad', user_id=user_id,ad_id=campaign.publ_id) }}" method="post" style="display:inline;">
+                            <button class="btn btn-success" type="submit">Request Ad</button>
+                        </form>
+                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#negotiationModal{{ campaign.publ_id }}">
+                            Negotiate Amount
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modals for Negotiation -->
+    {% for campaign in campaigns %}
+    <div class="modal fade" id="negotiationModal{{ campaign.publ_id }}" tabindex="-1" role="dialog" aria-labelledby="negotiationModalLabel{{ campaign.publ_id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="negotiationModalLabel{{ campaign.publ_id }}">Negotiate Amount</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('push_negotiation', user_id=user_id, ad_id=campaign.publ_id,ad_type='public') }}" method="post" id="negotiationForm{{ campaign.publ_id }}">
+                        <div class="form-group">
+                            <label for="negotiationAmount{{ campaign.publ_id }}">Enter Amount:</label>
+                            <input type="number" class="form-control" id="negotiationAmount{{ campaign.publ_id }}" name="negotiationAmount" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" form="negotiationForm{{ campaign.publ_id }}" class="btn btn-success">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .profile-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+            height: 100%;
+        }
+        .campaign-table {
+            padding: 20px;
+        }
+        .section-divider {
+            margin: 20px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .red-row {
+            background-color: red;
+        }
+        .full-height-row {
+            height: 100vh;
+        }
+        .section-header {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">ADMIN Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('logout', user_id=user_id) }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row full-height-row">
+            <!-- Profile Section -->
+            <div class="col-md-3 profile-section">
+                <h4>Profile</h4>
+                <p><strong>ADMIN NAME :</strong> {{ admin.name }}</p>
+                <p><strong>Email :</strong> {{ admin.admin_email }}</p>
+            </div>
+            <!-- Main Content Section -->
+            <div class="col-md-9 campaign-table">
+                <!-- Sponsor Section -->
+                <div class="section-divider">
+                    <h4 class="section-header">Sponsors</h4>
+                    {% if sponsors %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Sponsor ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Company</th>
+                                <th>Industry</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sponsor in sponsors %}
+                            <tr class="{% if sponsor.blacklisted == 1 %}red-row{% endif %}">
+                                <td>{{ sponsor.id }}</td>
+                                <td>{{ sponsor.name }}</td>
+                                <td>{{ sponsor.email }}</td>
+                                <td>{{ sponsor.company_name }}</td>
+                                <td>{{ sponsor.industry }}</td>
+                                <td>
+
+                                    <button onclick="window.location.href='{{ url_for('getdetails', user_id=sponsor.id) }}'">View Activity</button>
+                                    {% if sponsor.blacklisted == 0 %}
+                                     <button onclick="showConfirmWithdrawModal('{{ url_for('Spons_Blacklist', user_id=sponsor.id) }}')">BlackList</button>
+                                    {% else %}
+                                        <button onclick="window.location.href='{{ url_for('Spons_Whitelist', user_id=sponsor.id) }}'">Whitelist</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No ongoing campaigns found.</p>
+                    {% endif %}
+                </div>
+                <!-- Influencer Section -->
+                <div class="section-divider">
+                    <h4 class="section-header">Influencers</h4>
+                    {% if influencers %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Influencer ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Followers</th>
+                                <th>Niche #1</th>
+                                <th>Niche #2</th>
+                                <th>Niche #3</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for influencer in influencers %}
+                            <tr class="{% if influencer.blacklisted == 1 %}red-row{% endif %}">
+                                <td>{{ influencer.id }}</td>
+                                <td>{{ influencer.name }}</td>
+                                <td>{{ influencer.email }}</td>
+                                <td>{{ influencer.followers }}</td>
+                                <td>{{ influencer.niche1 }}</td>
+                                <td>{{ influencer.niche2 }}</td>
+                                <td>{{ influencer.niche3 }}</td>
+                                <td>
+                                    {% if influencer.blacklisted == 0 %}
+                                       <button onclick="showConfirmWithdrawModal('{{ url_for('Influ_Blacklist', user_id=influencer.id) }}')">BlackList</button>
+                                    {% else %}
+                                        <button onclick="window.location.href='{{ url_for('Influ_Whitelist', user_id=influencer.id) }}'">Whitelist</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No ongoing campaigns found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="confirmWithdrawModal" tabindex="-1" role="dialog" aria-labelledby="confirmWithdrawModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmWithdrawModalLabel">Confirm Withdrawal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to Blacklist this user?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmWithdrawButton">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    {% raw %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endraw %}
+    <script>
+        function showConfirmWithdrawModal(url) {
+            $('#confirmWithdrawModal').modal('show');
+            document.getElementById('confirmWithdrawButton').onclick = function() {
+                window.location.href = url;
+            };
+        }
+        function acceptNegotiation(url) {
+            // You can add more logic here if needed before redirecting
+            window.location.href = url;
+        }
+    </script>
+
+</body>
+</html>

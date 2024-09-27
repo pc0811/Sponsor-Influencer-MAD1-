@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPONSOR INFLUENCER COORDINATION PLATFORM - Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: #ff0000;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        function toggleFields() {
+            var userType = document.getElementById("usertype").value;
+            var companyField = document.getElementById("companyField");
+            var industryField = document.getElementById("industryField");
+            var followersField = document.getElementById("followersField");
+            var niche1 = document.getElementById("niche1Field");
+            var niche2 = document.getElementById("niche2Field");
+            var niche3 = document.getElementById("niche3Field");
+
+            if (userType === "Sponsor") {
+                companyField.style.display = "block";
+                industryField.style.display = "block";
+                followersField.style.display = "none";
+                niche1.style.display = "none";
+                niche1.querySelector("select").required = false;
+                niche2.style.display = "none";
+                niche2.querySelector("select").required = false;
+                niche3.style.display = "none";
+                niche3.querySelector("select").required = false;
+            } else if (userType === "Influencer") {
+                companyField.style.display = "none";
+                industryField.style.display = "none";
+                followersField.style.display = "block";
+                niche1.style.display = "block";
+                niche1.querySelector("select").required = true;
+                niche2.style.display = "block";
+                niche2.querySelector("select").required = true;
+                niche3.style.display = "block";
+                niche3.querySelector("select").required = true;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h3>Sign Up</h3>
+        <form action="{{ url_for('signup') }}" method="post">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <label for="usertype">User Type:</label>
+            <select id="usertype" name="usertype" required onchange="toggleFields()">
+                <option value="">Select an option</option>
+                <option value="Sponsor">Sponsor</option>
+                <option value="Influencer">Influencer</option>
+            </select>
+            <label for="Name">Name:</label>
+            <input type="text" id="Name" name="Name" required>
+            <!-- Company field, initially hidden -->
+            <div id="companyField" style="display: none;">
+                <label for="Company">Company:</label>
+                <input type="text" id="Company" name="Company">
+            </div>
+            <!-- Industry field, initially hidden -->
+            <div id="industryField" style="display: none;">
+                <label for="Industry">Industry:</label>
+                <input type="text" id="Industry" name="Industry">
+            </div>
+            <!-- Followers field, initially hidden -->
+            <div id="followersField" style="display: none;">
+                <label for="Followers">Followers:</label>
+                <input type="text" id="Followers" name="Followers">
+            </div>
+            <!-- Niche fields, initially hidden -->
+            <div id="niche1Field" style="display: none;">
+                <label for="niche1">Niche #1:</label>
+                <select id="niche1" name="niche1">
+                    <option value="">Select an option</option>
+                    <option value="Beauty and Makeup">Beauty and Makeup</option>
+                    <option value="Fitness and Wellness">Fitness and Wellness</option>
+                    <option value="Fashion and Style">Fashion and Style</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Technology">Technology</option>
+                </select>
+            </div>
+            <div id="niche2Field" style="display: none;">
+                <label for="niche2">Niche #2:</label>
+                <select id="niche2" name="niche2">
+                    <option value="">Select an option</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Food and Cooking">Food and Cooking</option>
+                    <option value="Health and Wellness">Health and Wellness</option>
+                    <option value="DIY and Crafts">DIY and Crafts</option>
+                    <option value="Personal Finance">Personal Finance</option>
+                </select>
+            </div>
+            <div id="niche3Field" style="display: none;">
+                <label for="niche3">Niche #3:</label>
+                <select id="niche3" name="niche3">
+                    <option value="">Select an option</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Parenting">Parenting</option>
+                    <option value="Pets">Pets</option>
+                    <option value="Motivation and Self-Help">Motivation and Self-Help</option>
+                    <option value="Education">Education</option>
+                </select>
+            </div>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p class="error">{{ error }}</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Influencer Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .profile-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+        .campaign-table {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Influencer Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('find_adreq', user_id=user_id) }}">Find</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Stats</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Profile Section -->
+            <div class="col-md-3 profile-section">
+                <h4>Profile</h4>
+                <p><strong>Name:</strong> {{ influencer1.name }}</p>
+                <p><strong>Email:</strong> {{ influencer1.email }}</p>
+                <p><strong>Followers:</strong> {{ influencer1.followers }}</p>
+                <p><strong>Niche #1:</strong> {{ influencer1.niche1 }}</p>
+                <p><strong>Niche #2:</strong> {{ influencer1.niche2 }}</p>
+                <p><strong>Niche #3:</strong> {{ influencer1.niche3 }}</p>
+            </div>
+            <!-- Campaign Table Section -->
+            <div class="col-md-9 campaign-table">
+                <h4>ADs Currently Working on</h4>
+                {% if ongoing_ads %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Adv. ID</th>
+                            <th>Campaign ID</th>
+                            <th>Title</th>
+                            <th>Start Date</th>
+                            <th>Progress</th>
+                            <th>MARK AS COMPLETE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ads in ongoing_ads %}
+                        <tr>
+                            <td>{{ ads.ad_id }}</td>
+                            <td>{{ ads.campaign_id }}</td>
+                            <td>{{ ads.ad_title }}</td>
+                            <td>{{ ads.date_accepted }}</td>
+                            <td>{{ 'Completed' if ads.completed == 1 else 'In Progress' }}</td>
+                            <td>
+                                {% if ads.completed != 1 %}
+                                <form action="{{ url_for('mark_complete', user_id=user_id, ongoing_ad_id=ads.ad_id) }}" method="post" style="display:inline;">
+                                    <button class="btn btn-primary" type="submit">Mark Complete</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No ongoing campaigns found.</p>
+                {% endif %}
+
+                <h4>AD Requests Received</h4>
+                {% if pending %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Requirements</th>
+                            <th>Budget</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in pending %}
+                        <tr>
+                            <td>{{ campaign.priv_id }}</td>
+                            <td>{{ campaign.campaign_id }}</td>
+                            <td>{{ campaign.date_posted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{ campaign.budget }}</td>
+
+                            <td>
+                                {% if campaign.publ_id == 0 %}
+                                   <form action="{{ url_for('accept_request', user_id=user_id , ad_id=campaign.priv_id) }}" method="post" style="display:inline;">
+                                   <button class="btn btn-success" type="submit">Accept Request</button>
+                                   </form>
+                                   <form action="{{ url_for('delete_adreq_influencer', user_id=user_id,campaign_type='private',ad_id=campaign.priv_id) }}" method="post" style="display:inline;">
+                                   <button class="btn btn-success" type="submit">Reject Request</button>
+                                   </form>
+                                   <!-- Button to Open the Modal -->
+                                   <button type="button" class="btn btn-success" data-toggle="modal" data-target="#negotiationModal{{ campaign.priv_id }}">
+                                       Negotiate Amount
+                                   </button>
+                                {% else %}
+                                   <form action="{{ url_for('delete_adreq_influencer', user_id=user_id,campaign_type='private',ad_id=campaign.priv_id) }}" method="post" style="display:inline;">
+                                   <button class="btn btn-success" type="submit">Withdraw Request</button>
+                                   </form>
+                                {% endif %}
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No pending campaigns found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    {% for campaign in pending %}
+    <div class="modal fade" id="negotiationModal{{ campaign.priv_id }}" tabindex="-1" role="dialog" aria-labelledby="negotiationModalLabel{{ campaign.priv_id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="negotiationModalLabel{{ campaign.priv_id }}">Negotiate Amount</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('push_negotiation', user_id=user_id, ad_id=campaign.priv_id , ad_type='private') }}" method="post" id="negotiationForm{{ campaign.priv_id }}">
+                        <div class="form-group">
+                            <label for="negotiationAmount{{ campaign.priv_id }}">Enter Amount:</label>
+                            <input type="number" class="form-control" id="negotiationAmount{{ campaign.priv_id }}" name="negotiationAmount" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" form="negotiationForm{{ campaign.priv_id }}" class="btn btn-success">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsor Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: black; /* Sets the background to black */
+            color: white; /* Sets the text color to white */
+            padding-top: 56px;
+            text-align: center; /* Centers all text horizontally */
+            font-family: Arial, sans-serif; /* Example: Sets font family */
+        }
+
+        /* Apply white text color to all elements */
+        body, table, th, td {
+            color: white;
+        }
+
+        /* Center the tables */
+        .table-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        table {
+            margin: 20px; /* Adds space around tables */
+            width: 80%; /* Adjust the width of the table */
+            border-collapse: collapse; /* Collapses borders for a cleaner look */
+            /* Adds a subtle shadow effect */
+        }
+
+        th, td {
+            padding: 10px; /* Adds padding inside table cells */
+            border: 1px solid white; /* Example: Adds borders around cells */
+            text-align: center; /* Centers text inside cells */
+        }
+
+        .campaign-table {
+            background-color: rgba(255, 255, 255, 0.1); /* Example: Adds a semi-transparent white background */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Campaigns</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor',user_id=user_id) }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Find</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Stats</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Profile Section -->
+            <!-- Campaign Table Section -->
+            <div class="col-md-9 campaign-table">
+                <h4>Campaign Detail</h4>
+                {% if ongoing_campaigns %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Start Date</th>
+                            <th>Progress</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ ongoing_campaigns.campaign_id }}</td>
+                            <td>{{ ongoing_campaigns.campaign_title }}</td>
+                            <td>{{ ongoing_campaigns.campaign_description }}</td>
+                            <td>{{ ongoing_campaigns.date_start }}</td>
+                            <td>{{ ongoing_campaigns.progress }}%</td>
+                            <td>
+                                <button onclick="window.location.href='{{ url_for('add_adv', user_id=user_id , campaign_type = 'public' , campaign_id = ongoing_campaigns.campaign_id) }}'">Make an Ad. Request </button>
+                                <button onclick="showUpdateModal('{{ ongoing_campaigns.campaign_id }}', '{{ ongoing_campaigns.campaign_title }}', '{{ ongoing_campaigns.campaign_description }}', '{{ ongoing_campaigns.budget }}')">Update</button>
+                                <button onclick="showConfirmWithdrawModal('{{ url_for('delete_campaign', user_id=user_id,campaign_id=ongoing_campaigns.campaign_id) }}')">Close/Terminate</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No ongoing campaigns found.</p>
+                {% endif %}
+                <br>
+                <br>
+
+                <h4>Accepted/Ongoing Ads</h4>
+                {% if ongoing_ads %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Budget</th>
+                            <th>Influencer Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in ongoing_ads %}
+                        <tr>
+                            <td>{{ campaign.campaign_id }}</td>
+                            <td>{{ campaign.date_accepted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{ campaign.budget_ad }}</td>
+                            <td>{{ campaign.influencer_email }}</td>
+                            <td>{{ 'Completed' if campaign.completed == 1 else 'In Progress' }}</td>
+                            <td>
+                                {% if campaign.completed != 1 %}
+                                <button class="btn btn-secondary" onclick="showConfirmWithdrawModal('{{ url_for('delete_adreq_sponsor', user_id=user_id, campaign_type='public',ad_id=campaign.ad_id) }}')">Withdraw Request</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No Ads Requested Publicly</p>
+                {% endif %}
+                <br>
+                <br>
+
+                <h4>Ads Requests Posted (Publicly Visible)</h4>
+                {% if ads_pending %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Budget</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in ads_pending %}
+                        <tr>
+                            <td>{{ campaign.publ_id }}</td>
+                            <td>{{ campaign.date_posted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{ campaign.budget }}</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="showConfirmWithdrawModal('{{ url_for('delete_adreq_sponsor', user_id=user_id, campaign_type='public',ad_id=campaign.publ_id) }}')">Withdraw Request</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No Ads Requested Publicly</p>
+                {% endif %}
+                <br>
+                <br>
+
+                <h4>Private Requests</h4>
+                {% if private_requests %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Influencer</th>
+                            <th>Budget</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in private_requests %}
+                        <tr>
+                            <td>{{ campaign.priv_id }}</td>
+                            <td>{{ campaign.date_posted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{ campaign.influencer_email }}</td>
+                            <td>
+                                {{ campaign.budget }}
+                                {% if campaign.negotiation_amt != None %}
+                               <div>ASK: {{ campaign.negotiation_amt }}</div>
+                               <button class="btn btn-primary" onclick="acceptNegotiation('{{ url_for('accept_negotiation',user_id=user_id,ad_id=campaign.priv_id) }}')">Accept</button>
+                                {% endif %}
+                             </td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="showConfirmWithdrawModal('{{ url_for('delete_adreq_sponsor', user_id=user_id, campaign_type='private',ad_id=campaign.priv_id) }}')">Withdraw Request</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No private requests found.</p>
+                {% endif %}
+                <div class="modal fade" id="confirmWithdrawModal" tabindex="-1" role="dialog" aria-labelledby="confirmWithdrawModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmWithdrawModalLabel">Confirm Withdrawal</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to withdraw this request?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="confirmWithdrawButton">Yes, Withdraw</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Campaign Modal -->
+                <div class="modal fade" id="updateCampaignModal" tabindex="-1" role="dialog" aria-labelledby="updateCampaignModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateCampaignModalLabel">Update Campaign</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form id="updateCampaignForm" method="POST" action="{{ url_for('update_campaign', user_id=user_id, campaign_id=ongoing_campaigns.campaign_id) }}">
+                                <div class="modal-body">
+                                    <input type="hidden" name="campaign_id" id="updateCampaignId">
+                                    <div class="form-group">
+                                        <label for="updateCampaignTitle">Title</label>
+                                        <input type="text" class="form-control" id="updateCampaignTitle" name="title" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="updateCampaignDescription">Description</label>
+                                        <textarea class="form-control" id="updateCampaignDescription" name="description" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="updateCampaignBudget">Budget</label>
+                                        <input type="number" class="form-control" id="updateCampaignBudget" name="budget" required>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function showConfirmWithdrawModal(url) {
+                        $('#confirmWithdrawModal').modal('show');
+                        document.getElementById('confirmWithdrawButton').onclick = function() {
+                            window.location.href = url;
+                        };
+                    }
+
+                    function acceptNegotiation(url) {
+                        // You can add more logic here if needed before redirecting
+                        window.location.href = url;
+                    }
+
+                    function showUpdateModal(id, title, description, budget) {
+                        $('#updateCampaignModal').modal('show');
+                        document.getElementById('updateCampaignId').value = id;
+                        document.getElementById('updateCampaignTitle').value = title;
+                        document.getElementById('updateCampaignDescription').value = description;
+                        document.getElementById('updateCampaignBudget').value = budget;
+                    }
+                </script>
+
+                <!-- Bootstrap JS and dependencies -->
+                {% raw %}
+                <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+                {% endraw %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

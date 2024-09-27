@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsor Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .profile-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+        .campaign-table {
+            padding: 20px;
+        }
+        .red-row {
+          background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Sponsor Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('campaign', user_id=user_id) }}">Campaigns</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('find_influencer', user_id=user_id) }}">Find</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('sponsor', user_id=user_id) }}">Stats</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Profile Section -->
+            <div class="col-md-3 profile-section">
+                <h4>Profile</h4>
+                <p><strong>Name:</strong> {{ sponsor1.name }}</p>
+                <p><strong>Company:</strong> {{ sponsor1.company_name }}</p>
+                <p><strong>Industry:</strong> {{ sponsor1.industry }}</p>
+                <p><strong>Email:</strong> {{ sponsor1.email }}</p>
+            </div>
+            <!-- Campaign Table Section -->
+            <div class="col-md-9 campaign-table">
+    <h4>Campaigns</h4>
+    {% if ongoing_campaigns %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Campaign ID</th>
+                <th>Title</th>
+                <th>Start Date</th>
+                <th>Progress</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campaign in ongoing_campaigns %}
+            <tr class="{% if campaign.blacklisted == 1 %}red-row{% endif %}">
+
+                <td>{{ campaign.campaign_id }}</td>
+                <td>{{ campaign.campaign_title }}</td>
+                <td>{{ campaign.date_start }}</td>
+                <td>{{ campaign.progress }}%</td>
+                <td>
+
+                         <button onclick="window.location.href='{{ url_for('view_campaign', user_id=user_id, campaign_id=campaign.campaign_id) }}'">View Campaign</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No ongoing Workshops found.</p>
+    {% endif %}
+
+
+                <h4>Public Requests</h4>
+                {% if ads_pending %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Budget</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in ads_pending %}
+                        <tr>
+                            <td>{{ campaign.campaign_id }}</td>
+                            <td>{{ campaign.date_posted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{ campaign.budget }}</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="showConfirmWithdrawModal('{{ url_for('delete_adreq_sponsor', user_id=user_id, campaign_type='public',ad_id=campaign.publ_id) }}')">Withdraw Request</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>NO Data Available</p>
+                {% endif %}
+
+
+                <h4>Private Requests Sent/Recieved </h4>
+                {% if private_requests %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Campaign ID</th>
+                            <th>Post/Request Date</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Influencer</th>
+                            <th>Budget</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in private_requests %}
+                        <tr>
+                            <td>{{ campaign.campaign_id }}</td>
+                            <td>{{ campaign.date_posted }}</td>
+                            <td>{{ campaign.ad_title }}</td>
+                            <td>{{ campaign.requirements }}</td>
+                            <td>{{campaign.influencer_email}}</td>
+                             <td>
+                                {{ campaign.budget }}
+                                {% if campaign.negotiation_amt != None %}
+                               <div>ASK: {{ campaign.negotiation_amt }}</div>
+                             <button class="btn btn-primary" onclick="acceptNegotiation('{{ url_for('accept_negotiation',user_id=user_id,ad_id=campaign.priv_id) }}')">Accept</button>
+                                {% endif %}
+                             </td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="showConfirmWithdrawModal('{{ url_for('delete_adreq_sponsor', user_id=user_id, campaign_type='private',ad_id =campaign.priv_id) }}')">Reject Request</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No Data Found</p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+<div class="modal fade" id="confirmWithdrawModal" tabindex="-1" role="dialog" aria-labelledby="confirmWithdrawModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmWithdrawModalLabel">Confirm Withdrawal</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to withdraw this request?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmWithdrawButton">Yes, Withdraw</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Bootstrap JS and dependencies -->
+    {% raw %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endraw %}
+   <script>
+    function showConfirmWithdrawModal(url) {
+      $('#confirmWithdrawModal').modal('show');
+      document.getElementById('confirmWithdrawButton').onclick = function() {
+        window.location.href = url;
+      };
+    }
+    function acceptNegotiation(url) {
+    // You can add more logic here if needed before redirecting
+    window.location.href = url;
+  }
+  </script>
+
+
+</body>
+</html>
